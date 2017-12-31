@@ -42,6 +42,7 @@ public class GetData extends AsyncTask<String, Integer, String> {
 
         URL url;
         try {
+            /*Getting the data from this url*/
             url = new URL("https://jsonplaceholder.typicode.com/posts");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setReadTimeout(10000 /* milliseconds */);
@@ -65,11 +66,14 @@ public class GetData extends AsyncTask<String, Integer, String> {
         } finally {
             urlConnection.disconnect();
         }
+
+        /*Return data wherever you will call this service*/
         return result.toString();
     }
 
     @Override
     protected void onPostExecute(String result) {
+        /*On flag it's deciding that if it's intent service then stop the service*/
         if (!flag) {
             mContext.stopService(new Intent(mContext, intentService.class));
         }

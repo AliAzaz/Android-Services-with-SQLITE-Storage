@@ -36,6 +36,7 @@ public class normalService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "Start Service", Toast.LENGTH_SHORT).show();
         try {
+            /*Pass the fetched data in function*/
             sendingData(normalService.this, new GetData(normalService.this, intent.getBooleanExtra("flag", true)).execute().get());
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -44,6 +45,7 @@ public class normalService extends Service {
         } catch (Exception e) {
         }
 
+        /*START_STICKY use, cause it will make service in the continuously running state*/
         return START_STICKY;
     }
 
@@ -59,11 +61,15 @@ public class normalService extends Service {
             if (json.length() > 0) {
                 try {
                     Toast.makeText(mContext, "Result " + new JSONArray(json).length(), Toast.LENGTH_SHORT).show();
+
+                    /*Broadcast the data. Now you can receive this broadcast anywhere in the
+                    * whole app with the "extends of BroadcastReceiver" class*/
                     Intent broadcast = new Intent();
-                    broadcast.setAction("sendingData");
+                    broadcast.setAction("sendingData"); //with this name you can get data
                     broadcast.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     broadcast.putExtra("data", json);
                     sendBroadcast(broadcast);
+
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

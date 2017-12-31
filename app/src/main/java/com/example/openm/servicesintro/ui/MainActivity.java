@@ -5,9 +5,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.AsyncTask;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -21,7 +18,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.openm.servicesintro.R;
 import com.example.openm.servicesintro.core.DataContract;
@@ -30,7 +26,6 @@ import com.example.openm.servicesintro.services.intentService;
 import com.example.openm.servicesintro.services.normalService;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -72,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         dataLst = getDataDB();
 
         /*Setting up listview*/
-        adapter = new ListAdapter(this, android.R.layout.simple_list_item_1, dataLst);
+        adapter = new ListAdapter(this, R.layout.activity_lstview, dataLst);
         lstData.setAdapter(adapter);
 
         /*Check service is running or not*/
@@ -85,9 +80,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btnStart:
+
+                /*Checking which menu option is selected*/
                 if (flag) {
+                    /*starting service and passing Boolean to specify Normal or Intent service*/
                     startService(new Intent(getApplicationContext(), normalService.class).putExtra("flag", flag));
                 } else {
+                    /*starting service and passing Boolean to specify Normal or Intent service*/
                     startService(new Intent(getApplicationContext(), intentService.class).putExtra("flag", flag));
                 }
 
@@ -109,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             Log.v("debug", service.service.getClassName());
+            /*Checking for both services NormalService or IntentService*/
             if (normalService.class.getName().equals(service.service.getClassName()) || intentService.class.getName().equals(service.service.getClassName())) {
                 return false;
             }
@@ -121,30 +121,35 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void onReceive(Context context, Intent intent) {
-
             try {
                 JSONArray jsonArray = new JSONArray(intent.getExtras().getString("data"));
 
+                /*pass data to insertData function for saving in DB*/
                 db.insertData(jsonArray);
+                /*Get data that's returning from function and setting it to variable
+                that's passing in listview adapter*/
                 dataLst = getDataDB();
 
-            } catch (Exception e) {}
-            finally {
-                /*Setting up listview*/
-                adapter = new ListAdapter(context, android.R.layout.simple_list_item_1, dataLst);
-                adapter.notifyDataSetChanged();
+            } catch (Exception e) {
+            } finally {
+                /*Setting up listview here, cause finally is the block that's run in the last after
+                * completing all the processes of try and catch block*/
+
+                //Initializing adapter and setting data
+                adapter = new ListAdapter(context, R.layout.activity_lstview, dataLst);
+                //Setting adapter to listview
                 lstData.setAdapter(adapter);
             }
 
             /*Checking Intent service currently running or not*/
             btnStart.setEnabled(isMyServiceRunning());
-
         }
     }
 
     /*When application closed*/
     @Override
     protected void onDestroy() {
+        //When app is destroy then unregister receiver
         this.unregisterReceiver(receiver);
 
         super.onDestroy();
@@ -189,11 +194,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /*Get Data from database*/
     public ArrayList<DataContract> getDataDB() {
-        Collection<DataContract> dt = db.getAllData();
+        Collection<DataContract> dt = db.getAllData();//Get data from db
         ArrayList<DataContract> data = new ArrayList<>();
 
         for (DataContract d : dt) {
-            data.add(d);
+            data.add(d); // adding data in array list
         }
 
         return data;
@@ -203,10 +208,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public class ListAdapter extends ArrayAdapter {
 
         ArrayList<DataContract> list = new ArrayList<>();
+        int textViewResourceId;
 
         public ListAdapter(Context context, int textViewResourceId, ArrayList<DataContract> objects) {
             super(context, textViewResourceId, objects);
             list = objects;
+            this.textViewResourceId = textViewResourceId;
         }
 
         @Override
@@ -218,12 +225,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         public View getView(final int position, View view, ViewGroup viewGroup) {
             View v = view;
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            v = inflater.inflate(R.layout.activity_lstview, null);
+            v = inflater.inflate(textViewResourceId, null);
+
+            /*Binding layout objects*/
             TextView txtID = (TextView) v.findViewById(R.id.txtID);
             TextView txtTitle = (TextView) v.findViewById(R.id.txtTitle);
             TextView txtBody = (TextView) v.findViewById(R.id.txtBody);
+
+            /*Setting data to fields object*/
             txtID.setText("ID:" + String.valueOf(list.get(position).getId()));
             txtTitle.setText("Title:" + list.get(position).getTitle());
+
+            /*use replace("\\\n", "\n") cause when you save \n in sqlite db it's
+            * automatically append \\ --> \\\n*/
             txtBody.setText("Body:" + list.get(position).getBody().replace("\\\n", "\n"));
 
             return v;

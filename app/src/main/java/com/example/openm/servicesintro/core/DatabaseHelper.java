@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 /**
- * Created by openm on 29-Dec-17.
+ * Created by aliazaz on 29-Dec-17.
  */
 
 public class DatabaseHelper extends SQLiteOpenHelper {
@@ -90,28 +90,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
         return allDT;
-    }
-
-    public Long insertData(DataContract dc) {
-
-        // Gets the data repository in write mode
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        // Create a new map of values, where column names are the keys
-        ContentValues values = new ContentValues();
-        values.put(singleData.COLUMN_ID, dc.getId());
-        values.put(singleData.COLUMN_USER_ID, dc.getUserId());
-        values.put(singleData.ROW_TITLE, dc.getTitle());
-        values.put(singleData.ROW_BODY, dc.getBody());
-
-        // Insert the new row, returning the primary key value of the new row
-        long newRowId;
-        newRowId = db.insert(
-                singleData.TABLE_NAME,
-                null,
-                values);
-        db.close();
-        return newRowId;
     }
 
     public void insertData(JSONArray json) {
